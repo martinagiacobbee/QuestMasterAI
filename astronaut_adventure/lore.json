@@ -1,0 +1,18 @@
+{
+  "quest_description": "L'astronauta deve esplorare una stazione spaziale danneggiata, disattivare un sistema di sicurezza malfunzionante e salvare un androide bloccato nel laboratorio centrale.",
+  "initial_state": "astronaut-at airlock, path-clear airlock corridor, system-malfunction security, lab-locked true, android-in lab, keycard-at storage, suit-damaged false",
+  "goal": "rescued android",
+  "obstacles": [
+    "system-malfunction security",
+    "lab-locked true"
+  ],
+  "branching_factor": {
+    "min": 2,
+    "max": 3
+  },
+  "depth_constraints": {
+    "min": 4,
+    "max": 6
+  },
+  "context": "Dopo una misteriosa interruzione di segnale, una stazione orbitale scientifica è rimasta isolata. Un astronauta viene inviato in missione per scoprire cosa è successo. Al suo arrivo trova la struttura in avaria, con i sistemi automatici impazziti e un prezioso androide bloccato nel laboratorio. Riuscirà a superare le barriere di sicurezza e compiere il salvataggio?"
+}
