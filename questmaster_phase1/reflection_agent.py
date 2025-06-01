@@ -2,6 +2,10 @@ import subprocess
 import os
 import json
 from langchain_ollama import OllamaLLM
+from dotenv import load_dotenv
+
+# Carica le variabili dal file local.env (se il file si chiama local.env e sta nella stessa cartella)
+load_dotenv('local.env')
 
 def run(domain_path, problem_path, lore_path):
     for attempt in range(10):
@@ -77,9 +81,9 @@ Restituisci solo i nuovi file PDDL in questo formato:
         # 5. Rivalidazione con Fast Downward via WSL
         print("\n[🚀] Validazione con Fast Downward (via WSL)...")
 
-        domain_wsl = "/mnt/c/Users/marti/OneDrive/Desktop/Università/Magistrale/Primo\\ Anno/Intelligenza\\ Artificiale/Progetto/questmaster_phase1/questmaster_phase1/domain.pddl"
-        problem_wsl = "/mnt/c/Users/marti/OneDrive/Desktop/Università/Magistrale/Primo\\ Anno/Intelligenza\\ Artificiale/Progetto/questmaster_phase1/questmaster_phase1/problem.pddl"
-
+       
+        domain_wsl = os.getenv('WSL_DOMAIN_PATH')
+        problem_wsl = os.getenv('WSL_PROBLEM_PATH')
         try:
             result = subprocess.run(
                 [

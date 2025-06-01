@@ -2,6 +2,10 @@ import subprocess
 import os
 import json
 from langchain_ollama import OllamaLLM
+from dotenv import load_dotenv
+
+# Carica le variabili dal file local.env (se il file si chiama local.env e sta nella stessa cartella)
+load_dotenv('local.env')
 
 # Percorsi
 base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -40,9 +44,9 @@ with open(problem_path, "w", encoding="utf-8") as f:
 print("[✅] File PDDL generati. Ora procedo con la validazione tramite Fast Downward in WSL...")
 
 # LANCIA fast-downward da WSL
-WSL_DOWNWARD_PATH = "~/downward/fast-downward.py"
-WSL_DOMAIN_PATH = "/mnt/c/Users/marti/OneDrive/Desktop/Università/Magistrale/Primo Anno/Intelligenza Artificiale/Progetto/questmaster_phase1/questmaster_phase1/domain.pddl"  
-WSL_PROBLEM_PATH = "/mnt/c/Users/marti/OneDrive/Desktop/Università/Magistrale/Primo Anno/Intelligenza Artificiale/Progetto/questmaster_phase1/questmaster_phase1/problem.pddl" 
+WSL_DOWNWARD_PATH = os.getenv('WSL_DOWNWARD_PATH')
+WSL_DOMAIN_PATH = os.getenv('WSL_DOMAIN_PATH')
+WSL_PROBLEM_PATH = os.getenv('WSL_PROBLEM_PATH')
 
 command = f"wsl python3 {WSL_DOWNWARD_PATH} {WSL_DOMAIN_PATH} {WSL_PROBLEM_PATH} --search \"astar(blind())\""
 
