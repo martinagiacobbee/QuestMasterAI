@@ -1,0 +1,18 @@
+{
+  "quest_description": "L'eroe deve attraversare una foresta infestata, superare un ponte sorvegliato e recuperare la Spada di Luce nascosta in un antico castello.",
+  "initial_state": "hero-at village, path-clear village forest, path-locked bridge, monster-alive forest, sword-at castle",
+  "goal": "has hero sword",
+  "obstacles": [
+    "monster-alive forest",
+    "path-locked bridge"
+  ],
+  "branching_factor": {
+    "min": 2,
+    "max": 3
+  },
+  "depth_constraints": {
+    "min": 4,
+    "max": 6
+  },
+  "context": "In un regno dimenticato, l'oscurità si espande giorno dopo giorno. La Spada di Luce, custodita in un castello remoto, è l’unico mezzo per riportare la speranza. Ma prima di impugnarla, l’eroe dovrà sopravvivere ai pericoli della foresta, sconfiggere una creatura maledetta, ottenere una chiave nascosta e ingannare una sentinella al ponte di confine."
+}

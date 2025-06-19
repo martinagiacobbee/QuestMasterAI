@@ -1,0 +1,37 @@
+{
+  "start": {
+    "text": "Ti trovi nel tuo villaggio. La strada verso la foresta conduce al castello in rovina dove si dice si trovi la Spada di Luce.",
+    "actions": {
+      "Dirigiti verso la foresta": "forest",
+      "Rimani nel villaggio": "village_end"
+    }
+  },
+  "forest": {
+    "text": "Attraversi la foresta oscura e un goblin ti salta davanti brandendo un pugnale arrugginito.",
+    "actions": {
+      "Combatti il goblin": "goblin_fight",
+      "Torna al villaggio": "village_end"
+    }
+  },
+  "goblin_fight": {
+    "text": "Sconfiggi il goblin dopo un breve scontro. Il sentiero verso il castello è libero.",
+    "actions": {
+      "Entra nel castello": "castle"
+    }
+  },
+  "castle": {
+    "text": "Dentro il castello in rovina, su un piedistallo luminoso, riposa la Spada di Luce.",
+    "actions": {
+      "Prendi la Spada di Luce": "victory",
+      "Esci dal castello": "forest"
+    }
+  },
+  "victory": {
+    "text": "Hai impugnato la Spada di Luce! Il tuo viaggio ha successo.",
+    "actions": {}
+  },
+  "village_end": {
+    "text": "Decidi di restare al villaggio. La Spada di Luce resterà una leggenda.",
+    "actions": {}
+  }
+}

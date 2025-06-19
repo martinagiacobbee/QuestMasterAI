@@ -1,12 +1,10 @@
 {
-  "quest_description": "L'eroe deve attraversare una foresta infestata, superare un ponte sorvegliato e recuperare la Spada di Luce nascosta in un antico castello.",
-  "initial_state": "hero-at village, path-clear village forest, path-locked bridge, guard-awake bridge, monster-alive forest, sword-at castle, key-at cabin, cabin-locked true",
-  "goal": "has hero sword",
+  "quest_description": "L'eroe deve attraversare un labirinto di torri, superare la Sfera dell'Ombra protetta da una guardia oscura e liberare il Principe Sognato imprigionato nel palazzo.",
+  "initial_state": "hero-at starting point, maze-labyrinth clear, sphere-alive shadow, prisoner-held castle, key-at tower",
+  "goal": "has hero key",
   "obstacles": [
-    "monster-alive forest",
-    "path-locked bridge",
-    "guard-awake bridge",
-    "cabin-locked true"
+    "sphere-alive shadow",
+    "prisoner-held castle"
   ],
   "branching_factor": {
     "min": 2,
@@ -16,5 +14,5 @@
     "min": 4,
     "max": 6
   },
-  "context": "In un regno dimenticato, l'oscurità si espande giorno dopo giorno. La Spada di Luce, custodita in un castello remoto, è l’unico mezzo per riportare la speranza. Ma prima di impugnarla, l’eroe dovrà sopravvivere ai pericoli della foresta, sconfiggere una creatura maledetta, ottenere una chiave nascosta e ingannare una sentinella al ponte di confine."
+  "context": "Nel regno oscurato, i sogni del popolo sono scempiati dalla presenza di un mostro che terrorizza il villaggio. Solo attraversando un labirinto misterioso e liberando l'ultima figura di speranza, l'eroe può affrontare la potenza dell'Ombra."
 }

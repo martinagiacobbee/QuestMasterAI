@@ -4,14 +4,14 @@ import json
 from langchain_ollama import OllamaLLM
 from dotenv import load_dotenv
 
-# Carica le variabili dal file local.env (se il file si chiama local.env e sta nella stessa cartella)
-load_dotenv('local.env')
+# Carica le variabili dal file local.env
+script_dir = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(script_dir, 'local.env'))
 
 def run(domain_path, problem_path, lore_path):
     for attempt in range(10):
         print(f"\n[🔁] Tentativo {attempt + 1}/10 - Reflection Agent avviato...\n")
 
-        # 1. Carica i file esistenti
         with open(domain_path, encoding="utf-8") as f:
             domain_pddl = f.read()
 
@@ -21,91 +21,112 @@ def run(domain_path, problem_path, lore_path):
         with open(lore_path, encoding="utf-8") as f:
             lore = json.load(f)
 
-        # 2. Prompt per LLM
-        prompt = f"""
-Sei un agente riflessivo che aiuta a correggere modelli PDDL. È stato generato il seguente dominio e problema, ma nessun piano valido è stato trovato.
+        llm = OllamaLLM(model="qwen2.5:3b")
 
-Analizza i due file PDDL e suggerisci una versione corretta e coerente con la seguente Lore:
+        # === PHASE 1: Domain Generation ===
+        print("🔍 Analisi e rigenerazione DOMAIN.PDDL...")
+        domain_prompt = f"""
+You are a critical reasoning AI for symbolic planning (PDDL).
 
-IMPORTANTE: Usa esattamente questo formato. Separa ogni blocco con '---' su una singola riga. Non inserire testo descrittivo.
+### TASK
+Given a failed planning attempt, analyze and regenerate a valid DOMAIN.PDDL based on the lore below.
+
+First, briefly reflect on WHY the previous domain might have failed. Then build a corrected domain with the simplest possible valid STRIPS structure.
+
+RULES:
+- No unused types or predicates.
+- Define only necessary actions with clear preconditions/effects.
+- Match objects and logic to the lore.
+- Output only the DOMAIN.PDDL, no explanations.
+
+LORE (JSON):
+{json.dumps(lore, indent=2)}
+
+Original DOMAIN.PDDL:
+{domain_pddl}
+
+--- Output only the corrected DOMAIN.PDDL
+"""
+        domain_output = llm.invoke(domain_prompt)
+
+        with open(domain_path, "w", encoding="utf-8") as f:
+            f.write(domain_output.strip())
+        print("[✅] Nuovo DOMAIN.PDDL salvato.")
+
+        # === PHASE 2: Problem Generation ===
+        print("🧩 Generazione coerente di PROBLEM.PDDL...")
+
+        with open(domain_path, encoding="utf-8") as f:
+            updated_domain = f.read()
+
+        problem_prompt = f"""
+You are a symbolic planner focused on STRIPS-style logic.
+
+Using the domain below and the original lore, generate a coherent PROBLEM.PDDL file.
+
+RULES:
+- Include only relevant objects consistent with the domain.
+- Initial state and goal must make logical sense and be achievable.
+- Output only valid PDDL — no extra text.
+
+DOMAIN.PDDL:
+{updated_domain}
 
 LORE:
 {json.dumps(lore, indent=2)}
 
---- DOMAIN.PDDL ORIGINALE:
-{domain_pddl}
-
---- PROBLEM.PDDL ORIGINALE:
-{problem_pddl}
-
-Restituisci solo i nuovi file PDDL in questo formato:
-1. Nuovo DOMAIN.PDDL
----
-2. Nuovo PROBLEM.PDDL
----
-(se necessario) 3. Nuova LORE aggiornata
-        """
-
-        llm = OllamaLLM(model="llama3")
-        response = llm.invoke(prompt)
-
-        # 3. Parsing output
-        parts = [p.strip() for p in response.split("---") if p.strip()]
-        if len(parts) < 2:
-            print("[❌] Risposta del modello non valida. Attesi almeno DOMAIN e PROBLEM separati da '---'.")
-            print("[🧾] Output ricevuto:\n", response)
-            break
-
-        new_domain = parts[0]
-        new_problem = parts[1]
-        new_lore = parts[2] if len(parts) > 2 else None
-
-        # 4. Scrittura file aggiornati
-        with open(domain_path, "w", encoding="utf-8") as f:
-            f.write(new_domain)
+--- Output only the corrected PROBLEM.PDDL
+"""
+        problem_output = llm.invoke(problem_prompt)
 
         with open(problem_path, "w", encoding="utf-8") as f:
-            f.write(new_problem)
+            f.write(problem_output.strip())
+        print("[✅] Nuovo PROBLEM.PDDL salvato.")
 
-        if new_lore:
-            try:
-                new_lore_json = json.loads(new_lore)
-                with open(lore_path, "w", encoding="utf-8") as f:
-                    json.dump(new_lore_json, f, indent=2)
-                print("[📝] Lore aggiornata.")
-            except json.JSONDecodeError:
-                print("[⚠️] Lore aggiornata non valida JSON. Ignorata.")
+        print("Do you want to modify the generated PDDL files? (y/n): ", end="")
+        modify_choice = input().strip().lower()
+        if modify_choice == "y":
+            print("Please edit the files manually:")
+            print(f"Domain: {domain_path}")
+            print(f"Problem: {problem_path}")
+            input("Press Enter when done...")   
+        else:
+            print("[✅] Skipping manual modification.")
 
-        print("[✅] File PDDL rigenerati dal Reflection Agent.")
-
-        # 5. Rivalidazione con Fast Downward via WSL
+        # === PHASE 3: Validation ===
         print("\n[🚀] Validazione con Fast Downward (via WSL)...")
 
-       
         domain_wsl = os.getenv('WSL_DOMAIN_PATH')
         problem_wsl = os.getenv('WSL_PROBLEM_PATH')
+        fd_path = os.getenv('WSL_DOWNWARD_PATH')
+
+        if not domain_wsl or not problem_wsl or not fd_path:
+            print("[⚠️] Variabili WSL non configurate correttamente.")
+            break
+
         try:
+            command_str = f'python3 "{fd_path}" "{domain_wsl}" "{problem_wsl}" --search "astar(blind())"'
+
             result = subprocess.run(
                 [
                     "wsl",
-                    "python3",
-                    "/home/utente/downward/fast-downward.py",
-                    "--alias", "seq-sat-lama-2011",
-                    domain_wsl,
-                    problem_wsl
+                    "-d", "Ubuntu",
+                    "bash", "-c", command_str
                 ],
                 capture_output=True,
                 text=True
             )
 
-            if "Solution found" in result.stdout:
-                print("[✅] Piano valido trovato con Fast Downward.")
+
+            output = result.stdout + result.stderr
+            if "Solution found" in output or "Plan found" in output:
+                print("[🎉] Piano valido trovato con Fast Downward.")
                 break
             else:
                 print("[❌] Nessun piano ancora trovato.")
-                print(result.stdout)
+                print(output)
         except Exception as e:
-            print("[⚠️] Errore durante la validazione con Fast Downward:", e)
+            print("[⚠️] Errore nella validazione Fast Downward:", e)
             break
     else:
         print("\n[⛔] Limite massimo di 10 tentativi raggiunto. Nessun piano valido trovato.")
