@@ -110,7 +110,3 @@ Progetto accademico – Università della Calabria
 Prof. Francesco Scarcello – Corso di Intelligenza Artificiale
 
 
-```
-
----
-```
